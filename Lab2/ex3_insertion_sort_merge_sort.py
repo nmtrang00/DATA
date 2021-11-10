@@ -7,6 +7,7 @@ def insertionSort(A):
   """
   To implement insertionSort() algorithm
     A:an array of integers.
+  O(n^2)
   """
   if len(A)<=1:
     return A
@@ -56,6 +57,7 @@ def mergeSort(A, start, end):
     A: an array of integers.
     start: index to start mergeSort in A (0≤start<len(A))
     end: index to end  mergeSort  in A; end is inclusive (0≤end<len(A))
+  O(nlog(n))
   """
   #end is inclusive
   if len(A) <=1:
@@ -141,4 +143,4 @@ def main():
   print("Approximately n = {}, mergeSort is the faster algorithm based onyour analysis".format(int(sum(min_n)/len(min_n))))
   # test(10**4, 0, 10**7)
 
-main()
+# main()

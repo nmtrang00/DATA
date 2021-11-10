@@ -1,5 +1,5 @@
 #!/bin/python
-from logging import raiseExceptions
+
 import unittest
 import numpy as np
 import math
@@ -80,10 +80,11 @@ class maxHeap:
     def build_max_heap(self, A):
         """
         To build a max-heap from an array of integer
-        The A[0:math.floor((self.size-1)/2)+1] contains roots of all subtree in heap
-        => A[math.floor((self.size-1)/2)+1:] contains all leaves of the tree, which is already a root of a maxheap with 1 node.
+        The A[0:parent(self.tail-1)+1] contains roots of all subtree in heap
+        => A[parent(self.tail-1)+1:] contains all leaves of the tree, which is already a root of a maxheap with 1 node.
         Because max_heapify going from top to bottom, we have to traverse in other way arround, 
-        else visited nodes at the top are not updated accordingly and the property of maxheap is broken
+        else visited nodes at the top are not updated accordingly (not greater than all of its children)
+        and the property of maxheap is broken.
         
         This function can only be called when the heap is empty:
         +Case 1: The heap currently has size of 0
@@ -100,7 +101,7 @@ class maxHeap:
         else:
             self.content[:len(A)]=A[:] #Case 2
             self.tail=len(A)
-        for i in range(math.floor((self.size-1)/2), -1, -1): 
+        for i in range(self.get_parent(self.size-1), -1, -1): 
             self.max_heapify(i)
 
     def query(self, key):
@@ -132,11 +133,39 @@ class maxHeap:
             ind=p
             p=self.get_parent(ind)
 
-    def extract_max(self):
-        pass
 
-    def delete(self):
-        pass
+    def delete(self, ind):
+        """
+        To remove a node at the position of index "ind" from the heap:
+        1. Move the key at index "ind" to the root of the tree, O(log(n))
+        2. Replace the root by the last element in heap's array, O(1)
+        3. Max-heapify(i) (At that moment, its children are already root of another max heap), O(log(n))
+
+        If step 1 is omitted, and the last element is greater than the parent of the node to delete,
+        we have to perform build_max_heap() which runs in O(nlogn) to obtain the maxheap property again
+
+        O(log(n))
+        """
+        if self.tail==1: #Prevent error in step 2 and 3, when there is only 1 key left in the heap
+            self.content[0]=None
+            self.tail-=1
+        else:
+            #Step 1
+            self.content[ind]=math.inf
+            p=self.get_parent(ind)
+            while p!=None and self.content[p]<self.content[ind]:
+                self.content[p], self.content[ind] = self.content[ind], self.content[p]
+                ind=p
+                p=self.get_parent(ind)
+
+            #Step 2
+            self.content[0]=self.content[self.tail-1]
+            self.content[self.tail-1]=None
+            self.tail-=1
+
+            #Step 3
+            self.max_heapify(0)
+
 
 class TestStackQueueMethods(unittest.TestCase):
     def test_init_max_heap(self):
@@ -280,7 +309,23 @@ class TestStackQueueMethods(unittest.TestCase):
     def test_insert_2(self):
         """
         To test if a new key is correctly inserted into a maxheap of size 10 that already contains 7 keys
-        (0)
+        (16)---(10)---(3)
+              |      |
+              |      |_(9)
+              |
+              |_(14)---(7)
+                      |
+                      |_(8)
+        Insert(17)
+        (17)---(10)---(3)
+              |      |
+              |      |_(9)
+              |
+              |_(16)---(7)
+                      |
+                      |_(14)---NIL
+                              |
+                              |_(8)
         """
         H=maxHeap(size=10)
         H.build_max_heap([16, 14, 10, 8, 7, 9, 3])
@@ -288,6 +333,84 @@ class TestStackQueueMethods(unittest.TestCase):
         expected_arr=[17, 16, 10, 14, 7, 9 ,3, 8]
         for i in range(7):
             self.assertEqual(H.content[i], expected_arr[i])
+
+    def test_delete_0(self):
+        """
+        To test if the only key in the heap is deleted successfully
+        (16)
+        Delete(0)
+        NONE
+        """
+        H=maxHeap(size=10)
+        H.insert(16)
+        H.delete(0)
+        expected_arr=[None]*10
+        for i in range(len(expected_arr)):
+            self.assertEqual(H.content[i], expected_arr[i])
+
+    def test_delete_1(self):
+        """
+        To test if after the root of the heap is deleted, the heap property is maintained
+        (16)---(15)---(13)
+              |      |
+              |      |_(14)
+              |
+              |_(9)---(7)
+                      |
+                      |_(8)
+        Delete(0)
+        (15)---(14)---NIL
+              |      |
+              |      |_(13)
+              |
+              |_(9)---(7)
+                      |
+                      |_(8)
+        """
+        H=maxHeap(size=10)
+        H.build_max_heap([16, 9, 15, 8, 7, 14, 13])
+        H.delete(0)
+        expected_arr=[15, 9, 14, 8, 7, 13]
+        for i in range(len(expected_arr)):
+            self.assertEqual(H.content[i], expected_arr[i])
+        self.assertIsNone(H.content[6])
+
+    def test_delete_2(self):
+        """
+        To test if after a node of the heap is deleted, the heap property is maintained
+        (16)---(15)---(13)
+              |      |
+              |      |_(14)---NIL
+              |              |
+              |              |_(10)
+              |
+              |_(9)---(7)---(3)
+                      |     |
+                      |     |_(1)
+                      |
+                      |_(8)---(5)
+                             |
+                             |_(4)
+        Delete(3)
+        (16)---(15)---(13)
+              |      |
+              |      |_(14)
+              |
+              |_(10)---(7)---(3)
+                      |     |
+                      |     |_(1)
+                      |
+                      |_(9)---(5)
+                             |
+                             |_(4)
+        """
+        H=maxHeap()
+        H.build_max_heap([16, 9, 15, 8, 7, 14, 13, 4, 5, 1, 3, 10])
+        H.delete(3)
+        expected_arr=[16, 10, 15, 9, 7, 14, 13, 4, 5, 1, 3]
+        for i in range(len(expected_arr)):
+            self.assertEqual(H.content[i], expected_arr[i])
+        self.assertIsNone(H.content[len(expected_arr)])
 
 if __name__ == '__main__':
     unittest.main()

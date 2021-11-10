@@ -6,7 +6,6 @@ import numpy as np
 from numpy.random import randint
 import matplotlib.pyplot as plt
 import pandas as pd
-from scipy.stats.stats import kendalltau
 import seaborn as sns
 from scipy.stats import wilcoxon
 
@@ -89,9 +88,6 @@ def compare_search_at_different_sizes(maxSize):
     rel_bst_arr=wilcoxon(df_no_zero["T_bst"], df_no_zero["T_arr"], alternative="greater")
     rel_bst_sll=wilcoxon(df_no_zero["T_bst"], df_no_zero["T_sll"], alternative="greater")
     rel_bst_dll=wilcoxon(df_no_zero["T_bst"], df_no_zero["T_dll"], alternative="greater")
-    # rel_bst_arr=wilcoxon(df_no_zero["T_bst"], df_no_zero["T_arr"], alternative="two-sided")
-    # rel_bst_sll=wilcoxon(df_no_zero["T_bst"], df_no_zero["T_sll"], alternative="two-sided")
-    # rel_bst_dll=wilcoxon(df_no_zero["T_bst"], df_no_zero["T_dll"], alternative="two-sided")
     return p_value(rel_bst_arr), p_value(rel_bst_sll), p_value(rel_bst_dll)
 
 def compare_search_at_a_size(n):
@@ -146,31 +142,3 @@ def main():
 
 main()
 
-
-# def box_plot_tree_balanced():
-#     keys=[12, 5, 18, 2, 9, 15, 19, 13, 17]
-#     key_to_find=0
-#     bst=binary_search_tree()
-#     arr=np.array(keys)
-#     sll=singly_linked_list()
-#     dll=doubly_linked_list()
-#     for k in keys:
-#         bst.insert(k)
-#         sll.insert(k)
-#         dll.insert(node(k))
-#     T_bst=[]
-#     T_arr=[]
-#     T_singly_linked_list=[]
-#     T_doubly_linked_list=[]
-#     for n in range(10**5):
-#         T_bst.append(track_time(iterative_tree_search(bst, key_to_find)))
-#         T_arr.append(track_time(array_search(arr, key_to_find)))
-#         T_singly_linked_list.append(track_time(sll.search(key_to_find)))
-#         T_doubly_linked_list.append(track_time(dll.search(key_to_find)))
-#     d={"bst": T_bst, 
-#     "array": T_arr, 
-#     "singly linked list": T_singly_linked_list, 
-#     "doubly linked list": T_doubly_linked_list}
-#     ax = sns.boxplot(data=pd.DataFrame(data=d).replace(0, np.NaN), palette="Blues")
-#     plt.title('Compare running time of search() function when bst is balanced')
-#     plt.show()
