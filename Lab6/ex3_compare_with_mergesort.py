@@ -10,7 +10,7 @@ from ex2_heapsort import heapSort
 cwd=os.getcwd()
 home_dir="/".join(cwd.split("/")[:-1])
 sys.path.append(home_dir)
-from comparative_test import track_time, p_value
+from comparative_test import track_time, p_value, F_test
 sys.path.append(os.path.join(home_dir, "Lab2"))
 from ex3_insertion_sort_merge_sort import mergeSort
 
@@ -20,8 +20,12 @@ Both runs in O(nlog(n))
 
 def compare_sort_at_a_size(n):
     """
-    Two-sided student's t-test for each size of input array.  For each size of input array, 
-    H0: 2 independent samples, T_merge and T_heap have identical average expected values (T_merge-T_heap=0)
+    A two-sided F-test, followed by a suitable two-sided t-test for each size of input array.  
+    Same var = Student's t-test
+    Diff var = Welch’s t-test
+    For each size of input array:
+        H0_ftest: 2 samples, T_merge and T_heap, have the same variances
+        H0_ttest: 2 independent samples, T_merge and T_heap have identical average expected values (T_merge-T_heap=0)
     """
     T_merge=[]
     T_heap=[]
@@ -37,7 +41,9 @@ def compare_sort_at_a_size(n):
         T_heap.append(track_time(heapSort(A_heap)))
     d={"T_merge": T_merge, "T_heap": T_heap}
     df=pd.DataFrame(data=d).replace(0, np.NaN).dropna()
-    rel=ttest_ind(df["T_merge"], df["T_heap"], alternative="two-sided")
+    f_rel=F_test(df["T_merge"], df["T_heap"], alternative="two-sided")
+    same_variance=(f_rel>0.05)
+    rel=ttest_ind(df["T_merge"], df["T_heap"], alternative="two-sided", equal_var=same_variance)
     return p_value(rel)
 
 def compare_sort_at_different_sizes(sizes):
@@ -72,15 +78,15 @@ def compare_sort_at_different_sizes(sizes):
         
 def main():
     sizes=[15,50,100,1000]
-    # for i in range(1,6):
-    #     print("Attempt no.{}".format(i))
-    #     for n in sizes:
-    #         rel=compare_sort_at_a_size(n)
-    #         print("\tn={}, Student's t-test p_value: {:.4f}".format(n, rel))
     for i in range(1,6):
         print("Attempt no.{}".format(i))
-        rel=compare_sort_at_different_sizes(sizes)
-        print("\tWilcoxon p-value: {:.4f}".format(rel))
+        for n in sizes:
+            rel=compare_sort_at_a_size(n)
+            print("\tn={}, t-test p_value: {:.4f}".format(n, rel))
+    # for i in range(1,6):
+    #     print("Attempt no.{}".format(i))
+    #     rel=compare_sort_at_different_sizes(sizes)
+    #     print("\tWilcoxon p-value: {:.4f}".format(rel))
     
     
 main()
