@@ -58,6 +58,7 @@ def compare_sort_at_different_sizes(sizes):
             k=randint(0,n*2)
             if not k in A:
                 A.append(k)
+        print(A)
         A_merge=[k for k in A]
         A_heap=[k for k in A]
         T_merge.append(track_time(mergeSort(A_merge, 0, len(A_merge)-1)))

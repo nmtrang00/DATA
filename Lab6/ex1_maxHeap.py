@@ -101,7 +101,9 @@ class maxHeap:
         else:
             self.content[:len(A)]=A[:] #Case 2
             self.tail=len(A)
-        for i in range(self.get_parent(self.size-1), -1, -1): 
+        if self.tail==1:
+            return 1
+        for i in range(self.get_parent(self.tail-1), -1, -1): 
             self.max_heapify(i)
 
     def query(self, key):
