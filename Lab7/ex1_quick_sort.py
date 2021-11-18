@@ -12,6 +12,7 @@ def partition(A, start, end):
     1. A[k] <= pivot, start<=k<anchor
     2. A[k] > pivot, anchor<=k<end-1
     3. A[end-1]=pivot
+    O(n)
     """
     if start==end-1: #Only an element in the array
         return A, start
@@ -27,6 +28,8 @@ def partition(A, start, end):
 def quickSort(A, start, end):
     """
     To sort a subarray A[start: end]
+    O(n^2): Worst-case, unbalanced partition into 3 arrays of size 0, 1(pivot) and n-1 (or in reverse order)
+    O(nlog(n)): Average case
     """
     if start<end-1:
         A, anchor=partition(A, start, end)

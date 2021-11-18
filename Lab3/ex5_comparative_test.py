@@ -42,8 +42,8 @@ class compare_stack():
         for i in range(self.no_size):
             S_arr.push(i)
             S_list.push(i)
-            A.append(track_time(S_arr.stackEmpty()))
-            L.append(track_time(S_list.stackEmpty()))
+            A.append(track_time(S_arr.stackEmpty(), "time"))
+            L.append(track_time(S_list.stackEmpty(), "time"))
         rel_stats=wilcoxon(A,L,alternative="two-sided")
         return p_value(rel_stats)
 
@@ -58,8 +58,8 @@ class compare_stack():
         S_arr=Stack_array(self.no_size+1)
         S_list=Stack_list()
         for i in range(self.no_size):
-            A.append(track_time(S_arr.push(i)))
-            L.append(track_time(S_list.push(i)))
+            A.append(track_time(S_arr.push(i),"time"))
+            L.append(track_time(S_list.push(i), "time"))
         rel_stats=wilcoxon(A,L,alternative="two-sided")
         return p_value(rel_stats)
     
@@ -76,8 +76,8 @@ class compare_stack():
         for i in range(self.no_size):
             S_arr.push(i)
             S_list.push(i)
-            A.append(track_time(S_arr.pop()))
-            L.append(track_time(S_list.pop()))
+            A.append(track_time(S_arr.pop(), "time"))
+            L.append(track_time(S_list.pop(), "time"))
         rel_stats=wilcoxon(A,L,alternative="two-sided")
         return p_value(rel_stats)
 
@@ -94,8 +94,8 @@ class compare_stack():
         for i in range(self.no_size):
             S_arr.push(i)
             S_list.push(i)
-            A.append(track_time(S_arr.pop()))
-            L.append(track_time(S_list.pop()))
+            A.append(track_time(S_arr.peek(), "time"))
+            L.append(track_time(S_list.peek(), "time"))
         rel_stats=wilcoxon(A,L,alternative="two-sided")
         return p_value(rel_stats)
 
@@ -115,8 +115,8 @@ class compare_queue():
         Q_arr=Queue_array(self.no_size)
         Q_list=Queue_list()
         for i in range(1,self.no_size):
-            A.append(track_time(Q_arr.enqueue(i)))
-            L.append(track_time(Q_list.enqueue(i)))
+            A.append(track_time(Q_arr.enqueue(i), "time"))
+            L.append(track_time(Q_list.enqueue(i), "time"))
         rel_stats=wilcoxon(A,L,alternative="two-sided")
         return p_value(rel_stats)
 
@@ -134,21 +134,21 @@ class compare_queue():
         for i in range(1,self.no_size):
             Q_arr.enqueue(i)
             Q_list.enqueue(i)
-            A.append(track_time(Q_arr.dequeue()))
-            L.append(track_time(Q_list.dequeue()))
+            A.append(track_time(Q_arr.dequeue(), "time"))
+            L.append(track_time(Q_list.dequeue(), "time"))
         rel_stats=wilcoxon(A,L,alternative="greater")
         return p_value(rel_stats)
 
 def main():
-    for i in range(1,11):
+    for i in range(1,6):
         print("Attempt no.{}:".format(i))
-        S=compare_stack(5000)
-        print("\tp_value_emptyStack:", round(S.compare_emptyStack(),5))
-        print("\tp_value_push:", round(S.compare_push(),5))
-        print("\tp_value_pop:", round(S.compare_pop(),5))
-        print("\tp_value_peek:", round(S.compare_peek(),5))
-        Q=compare_queue(5000)
-        print("\tp_value_enqueue:", round(Q.compare_enqueue(),5))
-        print("\tp_value_dequeue:", round(Q.compare_dequeue(),5))
+        S=compare_stack(10000)
+        print("\tp_value_emptyStack:", round(S.compare_emptyStack(),4))
+        print("\tp_value_push:", round(S.compare_push(),4))
+        print("\tp_value_pop:", round(S.compare_pop(),4))
+        print("\tp_value_peek:", round(S.compare_peek(),4))
+        Q=compare_queue(10000)
+        print("\tp_value_enqueue:", round(Q.compare_enqueue(),4))
+        print("\tp_value_dequeue:", round(Q.compare_dequeue(),4))
 
 main()

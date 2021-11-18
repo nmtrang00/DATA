@@ -77,17 +77,14 @@ def compare_search_at_different_sizes(maxSize):
         sll.insert(k)
         dll.insert(node(k))
         bst.insert(k)
-        T_bst.append(track_time(iterative_tree_search(bst, key_to_find)))
-        T_arr.append(track_time(array_search(arr, key_to_find)))
-        T_singly_linked_list.append(track_time(sll.search(key_to_find)))
-        T_doubly_linked_list.append(track_time(dll.search(key_to_find)))
+        T_bst.append(track_time(iterative_tree_search(bst, key_to_find), "time"))
+        T_arr.append(track_time(array_search(arr, key_to_find), "time"))
+        T_singly_linked_list.append(track_time(sll.search(key_to_find), "time"))
+        T_doubly_linked_list.append(track_time(dll.search(key_to_find), "time"))
     d={"T_bst": T_bst, "T_arr": T_arr, "T_sll": T_singly_linked_list, "T_dll": T_doubly_linked_list}
-    df=pd.DataFrame(data=d).replace(0,np.nan)
-    df_no_zero=df.dropna()
-    # df_no_zero.to_csv("compare_running_time_at_different_n.txt", sep="\t", index=False)
-    rel_bst_arr=wilcoxon(df_no_zero["T_bst"], df_no_zero["T_arr"], alternative="greater")
-    rel_bst_sll=wilcoxon(df_no_zero["T_bst"], df_no_zero["T_sll"], alternative="greater")
-    rel_bst_dll=wilcoxon(df_no_zero["T_bst"], df_no_zero["T_dll"], alternative="greater")
+    rel_bst_arr=wilcoxon(d["T_bst"], d["T_arr"], alternative="greater")
+    rel_bst_sll=wilcoxon(d["T_bst"], d["T_sll"], alternative="greater")
+    rel_bst_dll=wilcoxon(d["T_bst"], d["T_dll"], alternative="greater")
     return p_value(rel_bst_arr), p_value(rel_bst_sll), p_value(rel_bst_dll)
 
 def compare_search_at_a_size(n):
@@ -124,21 +121,20 @@ def compare_search_at_a_size(n):
     "array": T_arr, 
     "singly linked list": T_singly_linked_list, 
     "doubly linked list": T_doubly_linked_list}
-    # print(pd.DataFrame(data=d).replace(0, np.NaN))
     df=pd.DataFrame(data=d).replace(0, np.NaN).dropna()
     ax = sns.boxplot(data=df, palette="Blues")
     plt.show()
 
 def main():
     # bst_search_running_time_against_size(10000)
-    compare_search_at_a_size(200)
+    # compare_search_at_a_size(200)
     # box_plot_tree_balanced()
-    # for i in range(1,5):
-    #     print("Attempt no.{}".format(i))
-    #     results=compare_search_at_different_sizes()
-    #     print("\tp_value_bst_arr: {:.4f}".format(results[0]))
-    #     print("\tp_value_bst_sll: {:.4f}".format(results[1]))
-    #     print("\tp_value_bst_dll: {:.4f}".format(results[2]))
+    for i in range(1,5):
+        print("Attempt no.{}".format(i))
+        results=compare_search_at_different_sizes(2000)
+        print("\tp_value_bst_arr: {:.4f}".format(results[0]))
+        print("\tp_value_bst_sll: {:.4f}".format(results[1]))
+        print("\tp_value_bst_dll: {:.4f}".format(results[2]))
 
 main()
 

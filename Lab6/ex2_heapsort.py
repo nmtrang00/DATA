@@ -17,7 +17,7 @@ def heapSort(A):
     while H.tail>0:
         rel.append(H.content[0])
         H.delete(0)
-    return rel
+    return rel[::-1]
 
 class TestStackQueueMethods(unittest.TestCase):
     def test_heapSort(self):
@@ -38,7 +38,8 @@ class TestStackQueueMethods(unittest.TestCase):
                                 |_(4)
             """
             rel=heapSort([16, 9, 15, 8, 7, 14, 13, 4, 5, 1, 3, 10])
-            expected_arr=[16, 15, 14, 13, 10, 9, 8, 7, 5, 4, 3, 1]
+            # expected_arr=[16, 15, 14, 13, 10, 9, 8, 7, 5, 4, 3, 1]
+            expected_arr=[1,3,4,5,7,8,9,10,13,14,15,16]
             self.assertEqual(rel, expected_arr)
 
 if __name__ == '__main__':

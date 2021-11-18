@@ -1,9 +1,11 @@
 #!/bin/python
+import time
 import matplotlib.pyplot as plt
 import pandas as pd
 from scipy.stats import wilcoxon, ttest_ind
 from numpy.random import randint
 import numpy as np
+import seaborn as sns
 import os
 import sys
 from ex2_heapsort import heapSort
@@ -17,46 +19,11 @@ from ex3_insertion_sort_merge_sort import mergeSort
 """
 Both runs in O(nlog(n))
 """
-
-def compare_sort_at_a_size(n):
-    """
-    A two-sided F-test, followed by a suitable two-sided t-test for each size of input array.  
-    Same var = Student's t-test
-    Diff var = Welch’s t-test
-    For each size of input array:
-        H0_ftest: 2 samples, T_merge and T_heap, have the same variances
-        H0_ttest: 2 independent samples, T_merge and T_heap have identical average expected values (T_merge-T_heap=0)
-    """
-    T_merge=[]
-    T_heap=[]
-    for i in range(4000):
-        A=[]
-        while len(A)<n:
-            k=randint(0,n*2)
-            if not k in A:
-                A.append(k)
-        A_merge=[k for k in A]
-        A_heap=[k for k in A]
-        T_merge.append(track_time(mergeSort(A_merge, 0, len(A_merge)-1)))
-        T_heap.append(track_time(heapSort(A_heap)))
-    d={"T_merge": T_merge, "T_heap": T_heap}
-    df=pd.DataFrame(data=d).replace(0, np.NaN).dropna()
-    f_rel=F_test(df["T_merge"], df["T_heap"], alternative="two-sided")
-    same_variance=(f_rel>0.05)
-    rel=ttest_ind(df["T_merge"], df["T_heap"], alternative="two-sided", equal_var=same_variance)
-    return p_value(rel)
-
-def compare_sort_at_different_sizes(sizes):
-    """
-    Two-sided Wilcoxin
-    H0: mergeSort() and heapSort() do not express significant difference in running time
-    (The median difference in runtime of 2 implementations (T_merge-T_heap) is 0)
-    Only works with sample greater than 60
-    """
-    T_merge=[]
-    T_heap=[]
+def generate_arr_to_test(sizes, outdir):
+    df=pd.DataFrame()
+    arr=[]
     testSizes=sizes[:]
-    for i in range(1000):
+    for i in range(100):
         testSizes.extend(sizes)
     for n in testSizes:
         A=[]
@@ -64,52 +31,68 @@ def compare_sort_at_different_sizes(sizes):
             k=randint(0,n*2)
             if not k in A:
                 A.append(k)
-        print(A)
-        A_merge=[k for k in A]
-        A_heap=[k for k in A]
-        T_merge.append(track_time(mergeSort(A_merge, 0, len(A_merge)-1)))
-        T_heap.append(track_time(heapSort(A_heap)))
-    d={"T_merge": T_merge, "T_heap": T_heap}
-    df=pd.DataFrame(data=d).replace(0,np.nan)
-    df_no_zero=df.dropna()
-    rel=wilcoxon(df_no_zero["T_merge"], df_no_zero["T_heap"], alternative="two-sided")
-    return p_value(rel)
+        arr.append(A)
+    df["A"]=arr
+    df.to_csv(outdir, index=False, sep="\t")
 
-        
-def main():
-    sizes=[15,50,100,1000]
-    for i in range(1,6):
-        print("Attempt no.{}".format(i))
-        for n in sizes:
-            rel=compare_sort_at_a_size(n)
-            print("\tn={}, t-test p_value: {:.4f}".format(n, rel))
-    # for i in range(1,6):
-    #     print("Attempt no.{}".format(i))
-    #     rel=compare_sort_at_different_sizes(sizes)
-    #     print("\tWilcoxon p-value: {:.4f}".format(rel))
+def collect_data(arr_to_test, time_type, outdir=None):
+    """
+    To track runningtime of 2 sorting functions
+    """
+    arr=pd.read_csv(arr_to_test, sep="\t", header=0)
+    d={"T_merge": [], "T_heap": []}
+    for i in range(arr.shape[0]):
+        A=arr["A"][i][1:len(arr["A"][i])-1].split(",")
+        A_merge=[int(i) for i in A]
+        A_heap=[int(i) for i in A]
+        d["T_merge"].append(track_time(mergeSort(A_merge,0, len(A_merge)-1), time_type))
+        d["T_heap"].append(track_time(heapSort(A_heap)))
+    df=pd.DataFrame(data=d)
+    if not outdir==None:
+        df.to_csv(outdir, sep="\t", index=False)
+    return df
+
+def stats_compare(df, test_type):
+    """
+    Wilcoxon test:
+    1. One-sided test: 
+        - "greater": df[col1]-df[col2] < 0
+        - "less": df[col1]-df[col2] > 0
+    2. Two-sided test: 
+        - "two-sided": df[col1]-df[col2]=0
+    """
+    rel=p_value(wilcoxon(df["T_merge"], df["T_heap"], alternative=test_type))  
+    return rel
+
+
+def diagram_compare(df, outdir):
+    """
+    To create boxplot of runningtime for each functions
+    """
+    boxplot = df.boxplot(column=[c for c in df.columns if c.startswith("T")])
+    plt.savefig(outdir)
+    plt.close()
     
+    
+def main():
+    sizes_0=[15,50,100,1000]
+    sizes=[sizes_0[3]]
+    n="_".join([str(n) for n in sizes])
+    arr_to_test="compare_out/arr_to_test_n{}.txt".format(n)
+    generate_arr_to_test(sizes, arr_to_test)
+    t="process_time"
+    for attempt in range(1,6):
+        dataout="compare_out/sort_running_time_n{0}_{1}_attempt{2}.txt".format(n, t, attempt)
+        df=collect_data(arr_to_test, t, dataout)
+        # df=pd.read_csv("compare_out/sort_running_time_{}_{}.txt".format(n, t), sep="\t")
+        diaout="dia/sort_running_time_{0}_{1}_attempt{2}.png".format(n, t, attempt)
+        diagram_compare(df, diaout)
+        print("Attempt no.{}".format(attempt))
+        rel=stats_compare(df,"greater")
+        print("\tpvalue:", round(rel,4))
     
 main()
 
-# def compare_sort_at_a_size_by_diagram(n):
-#     """
-#     To compare running_time of mergeSort() and heapSort() on a array of "n" integers 
-#     Both runs in O(nlog(n))
-#     """
-#     T_merge=[]
-#     T_heap=[]
-#     for i in range(1000):
-#         A=[]
-#         while len(A)<n:
-#             k=randint(0,n*2)
-#             if not k in A:
-#                 A.append(k)
-#         T_merge.append(track_time(mergeSort(A, 0, len(A)-1)))
-#         T_heap.append(track_time(heapSort(A)))
-#     d={"mergeSort()": T_merge, 
-#     "heapSort()": T_heap}
-#     df=pd.DataFrame(data=d).replace(0, np.NaN).dropna()
-#     ax = sns.boxplot(data=df, palette="Blues")
-#     ax.set_title("n={}".format(n))
-#     ax.set_ylabel("Running time (s)")
-#     plt.show()
+
+
+

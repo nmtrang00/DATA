@@ -169,15 +169,15 @@ def compare_worst_case_search_at_different_sizes(maxSize):
     return p_value(rel_stats)
 
 def main():
-    # compare_insert_at_a_size(20)
-    # for i in range(1,5):
-    #     print("Attempt no.{}:".format(i))
-    #     print("\tpvalue_insert:", round(compare_insert_at_different_sizes(100),5))
+    compare_insert_at_a_size(20)
+    for i in range(1,5):
+        print("Attempt no.{}:".format(i))
+        print("\tpvalue_insert:", round(compare_insert_at_different_sizes(100),5))
     # compare_search_at_a_size(20)
     # for i in range(1,5):
     #     print("Attempt no.{}:".format(i))
     #     print("\tpvalue_search:", round(compare_search_at_different_sizes(100),5))
-    compare_search_worst_case_at_a_size(20)
+    # compare_search_worst_case_at_a_size(20)
     # for i in range(1,5):
     #     print("Attempt no.{}:".format(i))
     #     print("\tpvalue_search:", round(compare_worst_case_search_at_different_sizes(1000),5))

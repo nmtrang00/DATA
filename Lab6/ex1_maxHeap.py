@@ -69,9 +69,9 @@ class maxHeap:
         l=self.get_left_child(ind)
         r=self.get_right_child(ind)
         largest=ind
-        if l!=None and self.content[l]!=None and self.content[l]>self.content[largest]:
+        if not l==None and not self.content[l]==None and self.content[l]>self.content[largest]: 
             largest=l
-        if r!=None and self.content[r]!=None and self.content[r]>self.content[largest]:
+        if not r==None and not self.content[r]==None and self.content[r]>self.content[largest]:
             largest=r
         if largest!=ind:
             self.content[largest], self.content[ind]=self.content[ind],self.content[largest]
@@ -130,7 +130,7 @@ class maxHeap:
         self.tail+=1
         ind=self.tail-1
         p=self.get_parent(ind)
-        while p!=None and self.content[p]<self.content[ind]:
+        while not p==None and self.content[p]<self.content[ind]:
             self.content[p], self.content[ind] = self.content[ind], self.content[p]
             ind=p
             p=self.get_parent(ind)
