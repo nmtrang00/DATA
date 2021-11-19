@@ -10,18 +10,14 @@ def track_time(function_to_track, type="process_time"):
         To track running time of a function
         """
         if type == "process_time":
-            end_time=0
-            while end_time==0:
-                start_time=time.process_time()
-                function_to_track
-                end_time= time.process_time()-start_time
+            start_time=time.process_time()
+            function_to_track
+            end_time= time.process_time()-start_time
             return end_time
         elif type == "time":
-            end_time=0
-            while end_time==0:
-                start_time=time.time()
-                function_to_track
-                end_time=time.time()-start_time
+            start_time=time.time()
+            function_to_track
+            end_time=time.time()-start_time
             return end_time
         elif type == "timeit":
             running_time=timeit.timeit(str(function_to_track), number=5)
