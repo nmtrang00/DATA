@@ -144,5 +144,5 @@ def main():
     print("%quickSort() faster: {:.2f}".format(q))
     print("%mergeSort() faster: {:.2f}".format(m))
 
-main()
+# main()
     

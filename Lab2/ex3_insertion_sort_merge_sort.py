@@ -100,7 +100,7 @@ def test(noTest, minValue, maxValue, printCheckpoint=True):
     if time_merge < time_insertion:
       if n_mergeFaster[1] == 0:
         n_mergeFaster[0]=n
-        n_mergeFaster[1]=n+1
+        n_mergeFaster[1]=n
       else:
         if n_mergeFaster[1]==n-1:
           #B of length n-1 mergeSort() is also faster than insertionSort()
@@ -134,13 +134,13 @@ def n_merge_faster(noSimulation):
 
 def main():
   min_n=[]  
-  for i in range(1,6):
-    print("Attempt no.{}".format(i))
-    min_n.append(test(1501, 0, 10**4))
+  # for i in range(1,6):
+  #   print("Attempt no.{}".format(i))
+  #   min_n.append(test(1501, 0, 10**4))
   for i in range(10):
     min_n.append(test(1501, 0, 10**4, False))
   print(min_n)
-  print("Approximately n = {}, mergeSort is the faster algorithm based onyour analysis".format(int(sum(min_n)/len(min_n))))
+  print("Approximately n = {}, mergeSort is the faster algorithm based on my analysis".format(int(sum(min_n)/len(min_n))))
   # test(10**4, 0, 10**7)
 
 # main()

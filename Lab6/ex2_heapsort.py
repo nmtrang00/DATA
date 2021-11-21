@@ -11,6 +11,8 @@ def heapSort(A):
 
     O(nlog(n))
     """
+    if len(A)==0:
+        return []
     rel=[]
     H=maxHeap()
     H.build_max_heap(A)
