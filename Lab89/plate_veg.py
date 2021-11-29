@@ -1,5 +1,6 @@
 #!/bin/python
 import unittest
+from numpy.random import randint
 import os
 import sys
 cwd=os.getcwd()
@@ -79,16 +80,24 @@ class Plate():
     
     def del_linked_node_plate(self, linked_node_plate):
         """
-        To check if the vegetable on the linked plate is different from the current plate
+        To delete a node plate from the linked_plates
         O(1): doubly_linked_list.delete() runs in O(1)
         """
         self.linked_plates.content.delete(linked_node_plate)
 
     def pop_linked_node_plate(self):
         """
-        To remove the last plate added to the "linked_plates" stack and linked to the current plate
+        To remove the last node plate added to the "linked_plates" stack and linked to the current plate
+        O(1): self.linked_plates.pop() runs in O(1)
         """
         return self.linked_plates.pop()
+
+    def peek_linked_node_plate(self):
+        """
+        To get the last node plate added to the "linked_plates" stack and linked to the current plate
+        O(1): self.linked_plates.pop() runs in O(1)
+        """
+        return self.linked_plates.peek()
 
     def linked_plates_empty(self):
         return self.linked_plates.stackEmpty()
@@ -122,32 +131,41 @@ class Veg_on_plate():
     def check_n_plate(self):
         """
         n_plate > 0
+        O(1)
         """
-        if self.n_plate < 0:
+        if self.n_plate <= 0:
             raise Exception("Error 0: The number of plate must be a positive integer ")
-    
+        else:
+            return True
+
     def check_n_type_vegetable(self):
         """
         0 < n_type_vegetable <= n_plate
         n_type_vegetable > n_plate means that there are at least a plate with more than 1 vegetable, violating (1)
+        O(1)
         """
         if self.n_type_vegetable > 0:
             if self.n_type_vegetable > self.n_plate:
                 return False
+            else:
+                return True
         else:
-            raise Exception("Error 1: The number of vegetable must be a positive integer ")
+            raise Exception("Error 1: The number of type of vegetable must be a positive integer ")
     
     def check_n_straw(self):
         """
         0 <= n_staw <= n_plate*(n_plate-1)/2, each plate can be linked with maximum other (n_plate - 1) plates
+        O(1)
         """
         if self.n_straw < 0 or  self.n_straw > self.n_plate*(self.n_plate-1)/2:
             raise Exception("Error 2: The number of straw must be a positive integer in range 0 and n_plate*(n_plate-1)/2, inclusively. Each plate can be linked to maximum other {} plates.".format(n_plate-1))
-    
+        return True
+
     def check_veg_order(self):
         """
         len(veg_order) == n_plate, (1) is violated if there is any plate is empty
         0 <= veg_order[i] < n_type_vegetable for i in range(len(veg_order))
+        O(n_plate)
         """
         if len(self.veg_order) == self.n_plate:
             for i in range(self.n_plate):
@@ -160,10 +178,12 @@ class Veg_on_plate():
             raise Exception("Error 4: There are only {} plates, but the order of vegetable on {} plates is given.".format(self.n_plate, len(self.veg_order)))
         elif len(self.veg_order) < self.n_plate:
             return False
+        return True
     
     def check_plate_links(self):
         """
         len(plate_links) == n_straw, 0 <= plate_links[i][j] < n_plate for i,j in range(n_plate)
+        O(n_straw)
         """
         if  len(self.plate_links) == self.n_straw:
             for i in range(self.n_straw):
@@ -179,25 +199,46 @@ class Veg_on_plate():
                     raise Exception("Error 5: Linked plates must be in range of plate 0 to plate (n_plate-1), inclusively")
         else:
             raise Exception("Error 6: There are {} staws, but {} couples of linkesd plates are given".format(self.n_straw, len(self.plate_links)))
-    
+        return True
+
     def check_condition_1(self):
         """
-        To check conditions of all attributes
+        To check pre-conditions of all attributes and (1)
+        O(n_plate+n_straw): check_veg_order() runs in O(n_plate), check_plate_linkes() runs in O(n_straw), others run in O(1)
         """
-        self.check_n_plate()
-        self.check_n_type_vegetable()
-        self.check_n_straw()
-        self.check_veg_order()
+        return self.check_n_plate() and \
+        self.check_n_type_vegetable() and \
+        self.check_n_straw() and \
+        self.check_veg_order() and \
         self.check_plate_links()
         
     def check_condition_2_greedy(self):
+        """
+        To check (2) with a greedy algorithm: The condition on each plate is checked, each link is visited twice
+        O(n_plate)*O(n_straw)=O(n_plate*n_straw)<=O(n_plate*(n_plate*(n_plate-1)/2))=O(n_plate*3)
+        """
         if self.n_plate == self.n_type_vegetable:
             """
             Each plate contains a unique type of vegetable => It doesn't matter how they are connected
             """
             return True
+        for i in range(self.n_plate):
+            plate_to_check=self.plates[i]
+            # print(plate_to_check, self.plates[i])
+            linked_node_plate=plate_to_check.peek_linked_node_plate()
+            while not linked_node_plate==None:
+                linked_plate=self.plates[linked_node_plate.key]
+                if linked_plate.vegetable == plate_to_check.vegetable:
+                    return False
+                else:
+                    linked_node_plate=linked_node_plate.next
+        return True         
 
     def check_condition_2(self):
+        """
+        To check (2) with an improved algorithm: The condition on each plate is checked, each link is visited once
+        O(n_plate)+O(n_straw)=O(n_plate+n_straw)<=O(n_plate+(n_plate*(n_plate-1)/2))=O(n_plate*2)
+        """
         if self.n_plate == self.n_type_vegetable:
             """
             Each plate contains a unique type of vegetable => It doesn't matter how they are connected
@@ -215,9 +256,19 @@ class Veg_on_plate():
                     popped_plate.del_linked_node_plate(popped_node_plate.linked)
         return True           
 
+    def run_check_greedy(self):
+        c1=self.check_condition_1()
+        if c1:
+            self.check_condition_2_greedy()
+        else:
+            return c1
+
     def run_check(self):
-        return self.check_condition_1() and self.check_condition_2()
-    
+        c1=self.check_condition_1()
+        if c1:
+            self.check_condition_2()
+        else:
+            return c1
 
 class TestFunctions(unittest.TestCase):
     #node_plate
@@ -446,22 +497,7 @@ class TestFunctions(unittest.TestCase):
             vp3.check_veg_order()
             vp3.check_plate_links() #Error 5
 
-    # def test_vp_condition_2_greedy_0(self):
-    #     """
-    #     True is returned when the number of plate is equal to the number of types of vegetable distributed on plate
-    #     """
-    #     n_plate=4
-    #     n_type_vegetable=4
-    #     n_straw=4
-    #     veg_order=[0, 1, 2, 3] 
-    #     plate_links=[[0, 1],
-    #                  [0, 3],
-    #                  [1, 2],
-    #                  [2, 3]]
-    #     vp=Veg_on_plate(n_plate, n_type_vegetable, n_straw, veg_order, plate_links)
-    #     vp.check_condition_2_greedy()
-
-    def test_vp_condition_2_0(self):
+    def test_vp_condition_2_greedy_0(self):
         """
         True is returned when the number of plate is equal to the number of types of vegetable distributed on plate
         """
@@ -474,6 +510,55 @@ class TestFunctions(unittest.TestCase):
                      [1, 2],
                      [2, 3]]
         vp=Veg_on_plate(n_plate, n_type_vegetable, n_straw, veg_order, plate_links)
+        self.assertTrue(vp.check_condition_2_greedy())
+
+    def test_vp_condition_2_greedy_1(self):
+        """
+        False is returned when 2 linked plates have the same type of vegetable
+        """
+        n_plate=4
+        n_type_vegetable=3
+        n_straw=4
+        veg_order=[0, 0, 1, 2] 
+        plate_links=[[0, 1],
+                     [0, 2],
+                     [1, 2],
+                     [2, 3]]
+        vp=Veg_on_plate(n_plate, n_type_vegetable, n_straw, veg_order, plate_links)
+        vp.check_condition_1()
+        self.assertFalse(vp.check_condition_2_greedy()) #Plates 0 and 2 are linked, but they both have vegetable of type 0
+    
+    def test_vp_condition_2_greedy_2(self):
+        """
+        True is returned when condition 2 is matched 
+        """
+        n_plate=4
+        n_type_vegetable=3
+        n_straw=4
+        veg_order=[0, 1, 0, 2] 
+        plate_links=[[0, 1],
+                     [0, 3],
+                     [1, 2],
+                     [2, 3]]
+        vp=Veg_on_plate(n_plate, n_type_vegetable, n_straw, veg_order, plate_links)
+        vp.check_condition_1()
+        self.assertTrue(vp.check_condition_2_greedy())
+
+    def test_vp_condition_2_0(self):
+        """
+        True is returned when the number of plate is equal to the number of types of vegetable distributed on plate
+        """
+        n_plate=4
+        n_type_vegetable=4
+        n_straw=6
+        veg_order=[0, 1, 2, 3] 
+        plate_links=[[0, 1],
+                     [0, 2],
+                     [0, 3],
+                     [1, 2],
+                     [1, 3],
+                     [2, 3]]
+        vp=Veg_on_plate(n_plate, n_type_vegetable, n_straw, veg_order, plate_links)
         vp.check_condition_1()
         self.assertTrue(vp.check_condition_2())
 
@@ -484,7 +569,7 @@ class TestFunctions(unittest.TestCase):
         n_plate=4
         n_type_vegetable=3
         n_straw=4
-        veg_order=[0, 1, 0, 2] 
+        veg_order=[0, 0, 1, 2] 
         plate_links=[[0, 1],
                      [0, 2],
                      [1, 2],
@@ -508,6 +593,19 @@ class TestFunctions(unittest.TestCase):
         vp=Veg_on_plate(n_plate, n_type_vegetable, n_straw, veg_order, plate_links)
         vp.check_condition_1()
         self.assertTrue(vp.check_condition_2())
+        
+    def test_vp_run_check(self):
+        """
+        Both run_check() and run_check_greedy() need to pass check_condition_1(), so for this test, any case causing exception is not considered
+        """
+        for i in range(100):
+            n_plate=randint(1, 100000)
+            n_type_vegetable=randint(1, n_plate)
+            n_straw=randint(0, n_plate*(n_plate-1)/2)
+            veg_order=randint(0, n_type_vegetable-1, size=n_type_vegetable)
+            plate_links=randint(0, n_plate-1, size=(n_straw, 2))
+            vp=Veg_on_plate(n_plate, n_type_vegetable, n_straw, veg_order, plate_links)
+            self.assertTrue(vp.run_check()==vp.run_check_greedy())
 
 if __name__ == '__main__':
     unittest.main()
