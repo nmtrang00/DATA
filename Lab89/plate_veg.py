@@ -127,7 +127,7 @@ class Veg_on_plate():
         self.veg_order=veg_order
         self.plate_links=plate_links
         self.plates=[None]*n_plate
-
+        
     def check_n_plate(self):
         """
         n_plate > 0
